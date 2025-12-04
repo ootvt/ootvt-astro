@@ -1,12 +1,8 @@
-/** @type {import('tailwindcss').Config} */
-import typography from '@tailwindcss/typography';
+import { defineConfig } from 'astro/config';
 
-export default {
-	content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
-	theme: {
-		extend: {},
-	},
-	plugins: [
-		typography, // <--- 把插件注册在这里
-	],
-}
+// https://astro.build/config
+export default defineConfig({
+  site: 'https://ootvt-astro.pages.dev', // 替换为您的 Cloudflare Pages 域名
+  // 如果您有自定义域名，使用自定义域名，例如：
+  // site: 'https://yourdomain.com',
+});
