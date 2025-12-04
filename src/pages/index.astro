@@ -142,11 +142,12 @@ const posts = (await getCollection('blog')).sort(
 
 			.page-info {
 				color: var(--main-color);
-				font-family: monospace;
-				font-size: 0.875rem;
+				/* 移除 font-family: monospace; 让它跟随全局字体（宋体/衬线） */
+				/* font-family: monospace; */ 
+				font-size: 0.75rem; /* 调整为 0.75rem，与 .post-date 和 .post-category 大小一致 */
 				opacity: 0.6;
 			}
-
+			
 			.page-buttons {
 				display: flex;
 				gap: 2rem;

@@ -1,103 +1,94 @@
-/* 自定义字体 */
+/* src/styles/global.css */
+@import "tailwindcss"; 
+
+/* 1. 引入 Google Fonts (Alfa Slab One & Noto Serif SC) */
+@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Noto+Serif+SC:wght@300;400;500;700&display=swap');
+
+/* 2. 定义本地字体 (华文中宋) */
 @font-face {
-    font-family: 'MyLocalZhongSong';
-    src: url('/fonts/STZHONGS.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
+  font-family: 'MyLocalZhongSong';
+  src: url('/STZHONGS.ttf') format('truetype'); /* 注意路径以 / 开头，指向 public 目录 */
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
+/* 3. 定义全局变量 */
 :root {
-    --bg-color: #F5F5F5;
-    --dot-color: #E4E4E4;
-    --main-color: #484848;
-    --box-bg: rgba(217, 217, 217, 0.5);
+  --bg-color: #F5F5F5;
+  --dot-color: #E4E4E8; /* 稍微调整了点阵颜色以匹配视觉 */
+  --main-color: #484848;
+  --box-bg: rgba(217, 217, 217, 0.5);
 }
 
+/* 4. 全局 Body 样式 */
 body {
-    font-family: 'MyLocalZhongSong', 'STZhongsong', '华文中宋', 'SimSun', 'Noto Serif SC', serif;
-    background-color: var(--bg-color);
-    color: var(--main-color);
-    background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
-    background-size: 10px 10px;
-    margin: 0;
-    padding: 0;
-    line-height: 1.7;
+  font-family: 'MyLocalZhongSong', 'STZhongsong', '华文中宋', 'SimSun', serif;
+  background-color: var(--bg-color);
+  color: var(--main-color);
+  /* 背景点阵 */
+  background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+  background-size: 10px 10px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem; /* py-8 px-4 */
 }
 
-main {
-    width: 100%;
-    max-width: 672px;
-    margin: 0 auto;
-    padding: 3em 1em;
+/* 5. 标题专用字体 */
+.font-header {
+  font-family: 'Alfa Slab One', cursive;
+  font-weight: 400;
 }
 
-/* 标题样式 */
-h1, h2, h3, h4, h5, h6 {
-    font-family: 'Alfa Slab One', 'MyLocalZhongSong', cursive;
-    color: var(--main-color);
-    margin: 0 0 0.5rem 0;
-    line-height: 1.2;
+/* --- 自定义组件类 (Tailwind @apply 也可以，但原生 CSS 更直接) --- */
+
+/* 导航按钮 */
+.btn-nav {
+  font-family: 'Noto Serif SC', 'SimSun', serif;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  background-color: #fff;
+  color: var(--main-color);
+  cursor: pointer;
+  border: 4px solid var(--main-color);
+  font-size: 0.75rem;     
+  padding: 0.25rem 2rem;  
+  letter-spacing: 0.1em;
+  display: inline-block; /* 确保是块级或行内块 */
+  text-decoration: none;
 }
 
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; }
-h3 { font-size: 1.5rem; }
-h4 { font-size: 1.25rem; }
-
-/* 链接样式 */
-a {
-    color: var(--main-color);
-    text-decoration: none;
-    transition: color 0.2s ease;
+.btn-nav:hover {
+  transform: translate(-3px, -3px); 
+  box-shadow: 3px 3px 0px 0px var(--main-color);
 }
 
-a:hover {
-    color: #000;
-}
-
-/* 按钮样式 */
-.btn-nav, .nav-button {
-    font-family: 'Noto Serif SC', 'SimSun', serif;
-    font-weight: 500;
-    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-    background-color: #fff;
-    color: var(--main-color);
-    cursor: pointer;
-    border: 4px solid var(--main-color);
-    font-size: 0.75rem;
-    padding: 0.25rem 2rem;
-    letter-spacing: 0.1em;
-    display: inline-block;
-}
-
-.btn-nav:hover, .nav-button:hover {
-    transform: translate(-3px, -3px);
-    box-shadow: 3px 3px 0px 0px var(--main-color);
-}
-
-.btn-nav:active, .nav-button:active {
-    transform: translate(0, 0);
-    box-shadow: 0 0 0 0 transparent;
-    background-color: #ebebeb;
+.btn-nav:active {
+  transform: translate(0, 0);
+  box-shadow: 0 0 0 0 transparent;
+  background-color: #ebebeb;
 }
 
 /* 翻页按钮 */
 .btn-page {
     font-family: 'Noto Serif SC', 'SimSun', serif;
-    font-weight: 400;
+    font-weight: 500; /* 加粗，原为 400 */
     transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
     background-color: #fff;
     color: var(--main-color);
     cursor: pointer;
-    border: 2px solid var(--main-color);
-    font-size: 0.875rem;
-    padding: 0.25rem 1.5rem;
+    border: 4px solid var(--main-color); /* 加粗边框，原为 2px */
+    font-size: 0.75rem; /* 字体变小，原为 0.875rem */
+    padding: 0.25rem 2rem; /* 增加内边距 */
+    letter-spacing: 0.1em; /* 增加字间距 */
     display: inline-block;
 }
 
 .btn-page:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 2px 2px 0px 0px var(--main-color);
+    transform: translate(-3px, -3px); /* 悬浮位移加大，原为 -2px */
+    box-shadow: 3px 3px 0px 0px var(--main-color); /* 阴影加大，原为 2px */
 }
 
 .btn-page:active {
@@ -106,103 +97,7 @@ a:hover {
     background-color: #ebebeb;
 }
 
-/* 文章卡片样式 */
-.bg-article {
-    background-color: var(--box-bg);
-    padding: 1.5rem;
-    border: 1px solid transparent;
-    transition: border-color 0.2s ease;
-}
-
-.bg-article:hover {
-    border-color: var(--main-color);
-}
-
-/* 文章标题悬停效果 */
-.article-title-wrapper {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-    padding-right: 1.25rem;
-    margin-bottom: 1rem;
-}
-
-.article-title-bg {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 4px;
-    background-color: var(--main-color);
-    z-index: -1;
-    transition: width 0.3s ease-in-out;
-}
-
-.article-title-wrapper:hover .article-title-bg {
-    width: 100%;
-}
-
-.article-title {
-    color: var(--main-color);
-    padding-left: 1rem;
-    transition: color 0.3s ease;
-    margin: 0;
-}
-
-.article-title-wrapper:hover .article-title {
-    color: white;
-}
-
-/* 代码块样式 */
-code {
-    padding: 2px 5px;
-    background-color: rgba(217, 217, 217, 0.3);
-    border-radius: 2px;
-    font-family: 'Courier New', monospace;
-}
-
-pre {
-    padding: 1.5em;
-    border-radius: 8px;
-    background-color: rgba(217, 217, 217, 0.3);
-    overflow-x: auto;
-}
-
-pre > code {
-    all: unset;
-}
-
-/* 图片样式 */
-img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-    body {
-        font-size: 16px;
-    }
-    
-    main {
-        padding: 1em;
-    }
-    
-    h1 { font-size: 2rem; }
-    h2 { font-size: 1.5rem; }
-}
-
-.sr-only {
-    border: 0;
-    padding: 0;
-    margin: 0;
-    position: absolute !important;
-    height: 1px;
-    width: 1px;
-    overflow: hidden;
-    clip: rect(1px 1px 1px 1px);
-    clip: rect(1px, 1px, 1px, 1px);
-    clip-path: inset(50%);
-    white-space: nowrap;
-}
+/* 辅助类 */
+.text-custom { color: var(--main-color); }
+.bg-article { background-color: var(--box-bg); }
+.bg-custom-dark { background-color: var(--main-color); }

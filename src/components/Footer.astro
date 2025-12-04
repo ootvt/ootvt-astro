@@ -19,22 +19,23 @@ const today = new Date();
 	</div>
 </footer>
 
-<!-- RemixIcon CDN -->
 <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
 <style>
 	footer {
-		margin-top: 4rem;
+		margin-top: -0.5rem; /* 保持较小的顶部间距 */
 		padding: 1.5rem 1rem;
-		border-top: 1px solid var(--main-color);
 		background: transparent;
+		width: 100%; /* 强制宽度 */
+		box-sizing: border-box; /* 防止 padding 撑大导致换行 */
 	}
 
 	.footer-content {
-		max-width: 672px;
+		width: 100%; /* 【关键】强制占满容器宽度 */
+		max-width: 672px; /* 限制最大宽度与正文一致 */
 		margin: 0 auto;
 		display: flex;
-		justify-content: space-between;
+		justify-content: space-between; /* 【关键】强制两端对齐 */
 		align-items: center;
 		color: var(--main-color);
 		opacity: 0.8;
@@ -46,7 +47,7 @@ const today = new Date();
 
 	.social-links {
 		display: flex;
-		gap: 1rem;
+		gap: 1rem; /* 图标之间的间距 */
 		font-size: 1.125rem;
 	}
 
@@ -54,6 +55,8 @@ const today = new Date();
 		color: var(--main-color);
 		text-decoration: none;
 		transition: color 0.2s ease;
+		display: flex; /* 防止图标高度塌陷 */
+		align-items: center;
 	}
 
 	.social-links a:hover {
@@ -62,7 +65,7 @@ const today = new Date();
 
 	@media (max-width: 768px) {
 		.footer-content {
-			flex-direction: column;
+			flex-direction: column; /* 手机端垂直排列 */
 			gap: 1rem;
 			text-align: center;
 		}

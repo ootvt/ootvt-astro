@@ -1,113 +1,129 @@
 ---
-import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
 
+// 1. 获取博客并按时间排序
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+// 2. 按年份分组
+const postsByYear = posts.reduce((acc, post) => {
+    const year = post.data.pubDate.getFullYear();
+    if (!acc[year]) {
+        acc[year] = [];
+    }
+    acc[year].push(post);
+    return acc;
+}, {});
+
+const years = Object.keys(postsByYear).sort((a, b) => b - a);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
+			/* 复用首页的 main 宽度设置 */
 			main {
-				width: 960px;
+				width: 100%;
+				max-width: 672px; 
+				margin: 0 auto;
+				padding: 0 1rem 3rem;
 			}
+
+			.year-section {
+				margin-bottom: 3rem;
+			}
+
+			.year-title {
+				font-size: 1.8rem;
+				margin-bottom: -0.5rem;
+				padding-bottom: 0.5rem;
+				color: var(--main-color); /* 保持色调一致 */
+				font-family: 'MyLocalZhongSong', 'STZhongsong', serif; /* 保持字体一致 */
+			}
+
 			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
 				list-style-type: none;
-				margin: 0;
 				padding: 0;
 			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
+
+			.post-item {
 				margin-bottom: 1rem;
-				text-align: center;
+				display: block; /* 确保 hover 区域覆盖整行 */
 			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-			}
-			ul li a {
+
+			/* --- 以下样式完全复刻自首页 index.astro --- */
+			.post-link {
+				text-decoration: none;
 				display: block;
 			}
-			.title {
+
+			.title-wrapper {
+				position: relative;
+				display: inline-block;
+				padding-right: 1.25rem;
+				cursor: pointer;
+			}
+
+			.title-bg {
+				position: absolute;
+				left: 0;
+				top: 0;
+				height: 100%;
+				width: 4px; /* 默认竖杠宽度 */
+				background-color: var(--main-color);
+				z-index: -1;
+				transition: width 0.3s ease-in-out;
+			}
+
+			/* 悬停时背景变长 */
+			.post-item:hover .title-bg {
+				width: 100%;
+			}
+
+			.post-title {
+				font-family: 'MyLocalZhongSong', 'STZhongsong', '华文中宋', 'SimSun', serif;
+				font-size: 1.2rem; /* 列表页标题稍微小一点 */
+				font-weight: bold;
+				color: var(--main-color);
+				padding-left: 1rem;
+				transition: color 0.3s ease;
 				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
+				line-height: 1.6;
 			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
-			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
-				}
+
+			/* 悬停时文字变白 */
+			.post-item:hover .post-title {
+				color: white;
 			}
 		</style>
 	</head>
 	<body>
 		<Header />
 		<main>
-			<section>
-				<ul>
-					{
-						posts.map((post) => (
-							<li>
-								<a href={`/blog/${post.id}/`}>
-									{post.data.heroImage && (
-										<Image width={720} height={360} src={post.data.heroImage} alt="" />
-									)}
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
+			{years.map(year => (
+				<section class="year-section">
+					<h2 class="year-title">{year}</h2>
+					<ul>
+						{postsByYear[year].map((post) => (
+							<li class="post-item">
+								<a href={`/blog/${post.id}/`} class="post-link">
+									<div class="title-wrapper">
+										<div class="title-bg"></div>
+										<h3 class="post-title">{post.data.title}</h3>
+									</div>
 								</a>
 							</li>
-						))
-					}
-				</ul>
-			</section>
+						))}
+					</ul>
+				</section>
+			))}
 		</main>
 		<Footer />
 	</body>
