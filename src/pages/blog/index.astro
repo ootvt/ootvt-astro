@@ -5,155 +5,206 @@ import Footer from '../../components/Footer.astro';
 import Header from '../../components/Header.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+// ==========================================
+// 1. 数据处理逻辑
+// ==========================================
+
+// 获取所有文章并按时间倒序排序
+const allPosts = await getCollection('blog');
+const sortedPosts = allPosts.sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
-const postsByYear = posts.reduce((acc, post) => {
+
+// 2. 分组逻辑
+const groupsMap = new Map();
+
+for (const post of sortedPosts) {
     const year = post.data.pubDate.getFullYear();
-    if (!acc[year]) {
-        acc[year] = [];
+    const monthStr = post.data.pubDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+    
+    if (!groupsMap.has(year)) {
+        groupsMap.set(year, []);
     }
-    acc[year].push(post);
-    return acc;
-}, {});
-const years = Object.keys(postsByYear).sort((a, b) => b - a);
+    
+    const postsInYear = groupsMap.get(year);
+    const lastPost = postsInYear.length > 0 ? postsInYear[postsInYear.length - 1] : null;
+    
+    // 判断是否显示月份
+    const showMonth = !lastPost || lastPost.monthStr !== monthStr;
+    
+    postsInYear.push({
+        originalPost: post,
+        monthStr: monthStr,
+        showMonth: showMonth
+    });
+}
+
+// 3. 转换为数组并按年份倒序
+const yearGroups = Array.from(groupsMap.entries())
+    .sort((a, b) => b[0] - a[0])
+    .map(([year, posts]) => ({ year, posts }));
 ---
 
 <!doctype html>
 <html lang="zh-CN">
 	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<BaseHead title={`归档 - ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
         <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet">
 		<style>
+            /* 页面整体布局 */
             main {
-                display: block;
                 width: 100%;
                 max-width: 672px;
                 margin: 0 auto;
-                padding: 0 1rem;
+                padding: 2rem 1rem;
             }
 
-            .blog-container-wrapper {
+            /* --- 年份区块容器 --- */
+            .year-group {
                 position: relative;
-                width: 100%;
-                height: 80vh; 
-                margin: 0 0 2rem 0; 
+                margin-bottom: 5rem;
+                isolation: isolate; 
             }
 
-            #content-scroll-area {
-                width: 100%;
-                height: 100%;
-                overflow-y: auto; 
-                scrollbar-width: none; 
-                -ms-overflow-style: none; 
-                padding-right: 10px; 
-                scroll-behavior: smooth;
+            /* --- 年份数字 --- */
+            .year-label {
+                font-family: 'Alfa Slab One', cursive;
+                /* [修改] 再次调小字号 */
+                font-size: 4rem; 
+                line-height: 1;
+                color: var(--main-color);
+                
+                position: absolute;
+                /* [修改] 配合小字号微调位置 */
+                top: -1.8rem; 
+                right: 1.5rem;  
+                
+                z-index: 0;   
+                /* [修改] 移除透明度，保持不透明 */
+                opacity: 1; 
+                pointer-events: none;
+            }
+
+            /* --- 文章列表底框 --- */
+            .articles-box {
+                position: relative;
+                z-index: 10; 
+                background-color: var(--box-bg); 
+                padding: 2.5rem 2rem;
+            }
+
+            /* --- 文章列表 --- */
+            .post-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 1.25rem;
+            }
+
+            .post-row {
+                display: flex;
+                align-items: baseline;
+                gap: 1.5rem;
+                text-decoration: none;
             }
             
-            #content-scroll-area::-webkit-scrollbar {
-                display: none; 
-            }
-
-			.year-section {
-				margin-bottom: 2rem;
-			}
-			.year-section:last-of-type {
-				margin-bottom: 3rem; 
-			}
-			
-			ul {
-				list-style-type: none;
-				padding: 0;
-                margin: 0;
-			}
-
-			.post-item {
-				margin-bottom: 1rem;
-				display: block;
-			}
-
-            /* 前5个文章参与 View Transition */
-            .post-item[data-index="0"],
-            .post-item[data-index="1"],
-            .post-item[data-index="2"],
-            .post-item[data-index="3"],
-            .post-item[data-index="4"] {
-                /* View Transition 会自动处理这些 */
-            }
-
-            /* 第6个及之后:直接显示,不要动画 */
-            .post-item[data-animate="true"] {
-                /* 移除所有动画相关样式 */
-            }
-
-			.post-link {
-				text-decoration: none;
-				display: block;
-                position: relative; 
-			}
-
-			.title-wrapper {
-				position: relative;
-				display: inline-block;
-				padding-right: 1.25rem;
-				cursor: pointer;
-			}
-
-			.title-bg {
-				position: absolute;
-				left: 0;
-				top: 0;
-				height: 100%;
-				width: 4px;
-				background-color: var(--main-color);
-				z-index: -1;
-				transition: width 0.3s ease-in-out;
-			}
-
-			.post-item:hover .title-bg {
-				width: 100%;
-			}
-
-            .post-title {
-                font-family: 'MyLocalZhongSong', 'STZhongsong', '华文中宋', 'SimSun', serif;
-                font-size: 1.5rem; 
-                font-weight: bold;
+            /* --- 月份 --- */
+            .post-month {
+                font-family: 'Alfa Slab One', cursive;
+                font-size: 1.25rem;
                 color: var(--main-color);
-                padding-left: 1rem;
-                transition: color 0.3s ease;
-                margin: 0;
-                position: relative;
-                z-index: 10;
+                width: 3.5rem; 
+                text-align: right; 
+                flex-shrink: 0;
             }
 
-            /* [修改] 这里改用 var(--bg-color) */
-            /* 这样在暗黑模式下，背景是黑的，文字就会变黑，从而在白色的竖条上显示出来 */
-            .post-item:hover .post-title {
+            /* --- 标题容器 (用于悬停动画) --- */
+            .title-wrapper {
+                position: relative;
+                display: inline-block;
+                padding: 0 0.5rem;
+                margin: 0 -0.5rem; 
+                transition: color 0.3s ease;
+            }
+
+            /* --- 标题背景 (悬停变长) --- */
+            .title-bg {
+                position: absolute;
+                left: 0;
+                top: 0;
+                height: 100%;
+                width: 0;
+                background-color: var(--main-color);
+                z-index: -1;
+                transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            }
+
+            /* --- 标题文字 --- */
+            .post-title-text {
+                font-family: 'MyLocalZhongSong', 'STZhongsong', '华文中宋', serif;
+                font-size: 1.1rem;
+                color: var(--main-color);
+                font-weight: normal;
+                line-height: 1.6;
+                position: relative;
+                z-index: 1;
+                transition: color 0.3s ease;
+            }
+
+            /* ====== 悬停交互 ====== */
+            
+            /* 1. 背景展开 */
+            .post-row:hover .title-bg {
+                width: 100%;
+            }
+
+            /* 2. 文字变色 */
+            .post-row:hover .post-title-text {
                 color: var(--bg-color); 
             }
 
-            .post-year {
-                position: absolute;
-                right: 0; 
-                top: 50%;
-                transform: translateY(-50%); 
-                font-family: 'Alfa Slab One', cursive; 
-                font-size: 1.5rem; 
-                white-space: nowrap;
-                color: var(--main-color); 
-                opacity: 0; 
-                pointer-events: none;
-                transition: opacity 0.3s ease;
-                z-index: 1; 
+            /* ====== 镜像模式 (偶数项) ====== */
+            .year-group.mirror .year-label {
+                right: auto;
+                left: 1.5rem; 
             }
 
-            .post-link:hover .post-year {
-                opacity: 1; 
+            .year-group.mirror .post-row {
+                flex-direction: row-reverse; 
+            }
+            
+            .year-group.mirror .post-month {
+                text-align: left; 
+            }
+            
+            .year-group.mirror .post-title-text {
+                text-align: right; 
             }
 
+            /* 移动端适配 */
             @media (max-width: 600px) {
-                .post-year {
-                    display: none; 
+                .year-label {
+                    font-size: 3rem; /* 移动端对应缩小 */
+                    top: -1.2rem;
+                }
+                .articles-box {
+                    padding: 1.5rem 1rem;
+                }
+                /* 移动端取消镜像 */
+                .year-group.mirror .year-label {
+                    right: 1rem;
+                    left: auto;
+                }
+                .year-group.mirror .post-row {
+                    flex-direction: row;
+                }
+                .year-group.mirror .post-month {
+                    text-align: right;
+                }
+                .year-group.mirror .post-title-text {
+                    text-align: left;
                 }
             }
 		</style>
@@ -161,57 +212,39 @@ const years = Object.keys(postsByYear).sort((a, b) => b - a);
 	<body>
 		<Header />
 		<main>
-            <div class="blog-container-wrapper">
-                <div id="content-scroll-area">
-                    {years.map(year => {
-                        return (
-                            <section class="year-section">
-                                <ul>
-                                    {postsByYear[year].map((post) => {
-                                        const dateStr = post.data.pubDate.toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'long'
-                                        });
-                                        
-                                        const globalIndex = posts.findIndex(p => p.id === post.id);
-                                        const needsAnimation = globalIndex >= 5;
-                                        const animateIndex = needsAnimation ? (globalIndex - 5) : 0;
+            {yearGroups.map((group, index) => {
+                const isMirror = index % 2 !== 0;
 
-                                        return (
-                                            <li 
-                                                class="post-item"
-                                                data-index={globalIndex}
-                                                data-animate={needsAnimation ? "true" : "false"}
-                                                data-animate-index={animateIndex}
-                                            >
-                                                <a href={`/blog/${post.id}/`} class="post-link">
-                                                    <div 
-                                                        class="title-wrapper" 
-                                                        transition:name={!needsAnimation ? `title-${post.id}` : undefined}
-                                                    >
-                                                        <div class="title-bg"></div>
-                                                        <h3 class="post-title">
-                                                            {post.data.title}
-                                                        </h3>
-                                                    </div>
-                                                    
-                                                    <span class="post-year">{dateStr}</span>
-                                                </a>
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            </section>
-                        );
-                    })}
-                </div>
-            </div>
+                return (
+                    <div class={`year-group ${isMirror ? 'mirror' : ''}`}>
+                        <div class="year-label">{group.year}</div>
+
+                        <div class="articles-box">
+                            <ul class="post-list">
+                                {group.posts.map((item) => (
+                                    <li>
+                                        <a href={`/blog/${item.originalPost.id}/`} class="post-row">
+                                            {/* 月份 */}
+                                            <span class="post-month">
+                                                {item.showMonth ? item.monthStr : ''}
+                                            </span>
+                                            
+                                            {/* 标题部分 */}
+                                            <div class="title-wrapper">
+                                                <div class="title-bg"></div>
+                                                <span class="post-title-text">
+                                                    {item.originalPost.data.title}
+                                                </span>
+                                            </div>
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                );
+            })}
 		</main>
 		<Footer />
-
-        <script>
-            // 移除所有动画相关代码,保持页面简洁
-            // 只有前5个标题会通过 View Transition 产生动画效果
-        </script>
 	</body>
 </html>

@@ -53,23 +53,14 @@ const { posts } = Astro.props;
 				margin-bottom: 0.5rem;
 			}
 
-            /* [修复] 恢复竖线样式 */
-			.title-bg {
-				position: absolute;
-				left: 0;
-				top: 0;
-				height: 100%;
-				width: 4px;
-				background-color: var(--main-color);
-				z-index: -1;
-			}
+
 
 			.page-title {
 				font-size: 2rem;
 				font-weight: bold;
 				color: var(--main-color);
 				/* [修复] 将间距改回 1rem，防止和竖线挨得太近 */
-				padding-left: 1rem;
+				padding-left: 0rem;
 				margin: 0;
 				line-height: 1.2;
 			}
