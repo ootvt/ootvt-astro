@@ -6,9 +6,11 @@ import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 
+import '../styles/global.css';
+
 type Props = CollectionEntry<'blog'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, tags } = Astro.props;
 ---
 
 <html lang="zh-CN">
@@ -33,8 +35,6 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				cursor: default;
 				padding-right: 1.25rem;
 				margin-bottom: 1rem;
-				/* 确保竖条高度正确 */
-				line-height: 1;
 			}
 
 			.title-bg {
@@ -42,18 +42,17 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				left: 0;
 				top: 0;
 				height: 100%;
-				width: 4px;  /* 保持与主页一致的竖条宽度 */
+				width: 4px;
 				background-color: var(--main-color);
 				z-index: -1;
 			}
 
 			.article-title {
-				font-size: 1.5rem;  /* 改为与主页一致的 1.5rem */
+				font-size: 1.5rem;
 				font-weight: bold;
 				color: var(--main-color);
 				padding-left: 1rem;
-				margin: 0;  /* 移除底部 margin */
-				line-height: 1.6;  /* 添加行高,与主页一致 */
+				margin: 0;
 			}
 
 			.article-meta {
@@ -76,6 +75,12 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				font-size: 0.75rem;
 				text-decoration: underline;
 				text-decoration-color: #9ca3af;
+                transition: color 0.2s ease, opacity 0.2s ease;
+			}
+            
+            .article-category:hover {
+				opacity: 1;
+				color: #000;
 			}
 
 			.hero-image {
@@ -94,6 +99,16 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				border: 1px solid transparent;
 				line-height: 1.7;
 			}
+
+            /* [修复] 移除正文中第一个元素的上边距，防止顶部空隙过大 */
+            .article-content > :global(*:first-child) {
+                margin-top: 0 !important;
+            }
+
+            /* [修复] 移除正文中最后一个元素的下边距，解决底部边距过大的问题 */
+            .article-content > :global(*:last-child) {
+                margin-bottom: 0 !important;
+            }
 
 			.article-content :global(p) {
 				margin-bottom: 1.5em;
@@ -171,7 +186,11 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 								</span>
 							)}
 						</span>
-						<span class="article-category"># 随便写点</span>
+						
+						{tags && tags.map((tag) => (
+							<a href={`/tags/${tag}/`} class="article-category">#{tag}</a>
+						))}
+
 					</div>
 				</header>
 
