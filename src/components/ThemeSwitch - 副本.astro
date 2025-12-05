@@ -1,0 +1,77 @@
+---
+// src/components/CodeCopy.astro
+---
+<script>
+  // 支持 Astro View Transitions
+  const initCopyButtons = () => {
+    const codeBlocks = document.querySelectorAll('.astro-code');
+
+    codeBlocks.forEach((block) => {
+      // 1. 防止重复添加
+      if (block.querySelector('.copy-btn')) return;
+
+      // 2. 确保父容器是 relative 定位
+      if (block instanceof HTMLElement) {
+          block.style.position = 'relative';
+      }
+
+      // 3. 创建按钮
+      const button = document.createElement('button');
+      button.className = 'copy-btn';
+      button.innerHTML = 'COPY';
+      
+      // 4. 点击事件
+      button.addEventListener('click', async () => {
+        const code = block.querySelector('code')?.innerText || '';
+        try {
+          await navigator.clipboard.writeText(code);
+          // 复制成功，不做任何位移或文字提示，保持极简
+        } catch (err) {
+          console.error('Failed to copy!', err);
+        }
+      });
+
+      // 5. 插入按钮
+      block.appendChild(button);
+    });
+  };
+
+  document.addEventListener('astro:page-load', initCopyButtons);
+</script>
+
+<style is:global>
+  /* 硬朗风按钮 */
+  .copy-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    
+    font-family: 'Consolas', monospace;
+    font-size: 0.75rem;
+    font-weight: bold;
+    
+    /* 默认颜色跟随主题 */
+    background-color: var(--bg-color);
+    color: var(--main-color);
+    
+    /* 边框：左下缺角风格 */
+    border-left: 2px solid var(--main-color);
+    border-bottom: 2px solid var(--main-color);
+    
+    padding: 0.2rem 0.6rem;
+    cursor: pointer;
+    z-index: 10;
+    
+    /* 移除所有位移过渡，只保留颜色的快速切换 */
+    transition: background-color 0.1s, color 0.1s;
+  }
+
+  /* 悬停 & 点击效果：只变色，不移动 */
+  .copy-btn:hover,
+  .copy-btn:active {
+    background-color: var(--main-color);
+    color: var(--bg-color);
+    /* 确保没有任何位移 */
+    transform: none; 
+  }
+</style>

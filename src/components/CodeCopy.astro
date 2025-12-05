@@ -1,0 +1,80 @@
+---
+// src/components/CodeCopy.astro
+---
+<script>
+  const initCopyButtons = () => {
+    const codeBlocks = document.querySelectorAll('.astro-code');
+
+    codeBlocks.forEach((block) => {
+      if (block.querySelector('.copy-btn')) return;
+
+      if (block instanceof HTMLElement) {
+          block.style.position = 'relative';
+      }
+
+      const button = document.createElement('button');
+      button.className = 'copy-btn';
+      button.innerHTML = 'COPY';
+      
+      button.addEventListener('click', async () => {
+        const code = block.querySelector('code')?.innerText || '';
+        try {
+          await navigator.clipboard.writeText(code);
+        } catch (err) {
+          console.error('Failed to copy!', err);
+        }
+      });
+
+      block.appendChild(button);
+    });
+  };
+
+  document.addEventListener('astro:page-load', initCopyButtons);
+</script>
+
+<style is:global>
+  .copy-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-family: 'Consolas', monospace;
+    font-size: 0.75rem;
+    font-weight: bold;
+    
+    /* === 1. 亮色模式默认状态 === */
+    background-color: #ffffff; 
+    color: var(--main-color);
+    
+    border-left: 2px solid var(--main-color);
+    border-bottom: 2px solid var(--main-color);
+    
+    padding: 0.2rem 0.6rem;
+    cursor: pointer;
+    z-index: 10;
+    
+    transition: background-color 0.1s, color 0.1s;
+  }
+
+  /* === 2. 暗黑模式默认状态 (修正：直接写 html.dark) === */
+  html.dark .copy-btn {
+    background-color: #282a36; /* Dracula 背景 */
+    color: #E5E5E5;            /* 浅色文字 */
+    border-color: #E5E5E5;     /* 边框跟随文字颜色 */
+  }
+
+  /* === 3. 亮色模式悬停状态 === */
+  .copy-btn:hover,
+  .copy-btn:active {
+    background-color: var(--main-color);
+    color: #ffffff;
+    transform: none; 
+  }
+
+  /* === 4. 暗黑模式悬停状态 (修正：直接写 html.dark) === */
+  html.dark .copy-btn:hover,
+  html.dark .copy-btn:active {
+    background-color: #E5E5E5; /* 背景变亮 */
+    color: #282a36;            /* 文字变深 */
+    border-color: #E5E5E5;     /* 边框保持浅色 */
+  }
+</style>
