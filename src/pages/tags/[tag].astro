@@ -115,17 +115,14 @@ const { posts } = Astro.props;
 			}
 
 			.post-title {
-				font-family: 'MyLocalZhongSong', 'STZhongsong', '华文中宋', 'SimSun', serif;
-				font-size: 1.5rem;
-				font-weight: bold;
-				color: var(--main-color);
-				padding-left: 1rem;
+				/* ...原有属性... */
 				transition: color 0.3s ease;
 				margin: 0;
 			}
 
+			/* [修改] */
 			.post-item:hover .post-title {
-				color: white;
+				color: var(--bg-color);
 			}
 
 			.post-date {

@@ -1,14 +1,15 @@
 ---
 import { SITE_TITLE } from '../consts';
-import HeaderLink from './HeaderLink.astro'; // 1. 引入 HeaderLink 组件
+import HeaderLink from './HeaderLink.astro';
+import ThemeSwitch from './ThemeSwitch.astro';
 ---
 
 <header>
+    <ThemeSwitch />
 	<div class="header-content">
 		<h1 class="site-title">{SITE_TITLE}</h1>
 		
 		<nav>
-			{/* 2. 把 <a> 替换为 <HeaderLink>，它会自动判断是否选中 */}
 			<HeaderLink href="/" class="nav-button">文章</HeaderLink>
 			<HeaderLink href="/blog" class="nav-button">归档</HeaderLink>
 			<HeaderLink href="/categories" class="nav-button">分类</HeaderLink>
@@ -57,9 +58,12 @@ import HeaderLink from './HeaderLink.astro'; // 1. 引入 HeaderLink 组件
 		font-family: 'Noto Serif SC', 'SimSun', serif;
 		font-weight: 500;
 		transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-		background-color: #fff;
+		
+        /* [修改] 使用 CSS 变量，这样暗黑模式下会自动变色 */
+		background-color: var(--bg-color); 
 		color: var(--main-color);
-		cursor: pointer;
+		
+        cursor: pointer;
 		border: 4px solid var(--main-color);
 		font-size: 0.75rem;
 		padding: 0.25rem 2rem;
@@ -68,9 +72,8 @@ import HeaderLink from './HeaderLink.astro'; // 1. 引入 HeaderLink 组件
 		display: inline-block;
 	}
 
-	/* 3. 关键修改：同时选中 hover 和 active 状态 */
 	.nav-button:hover,
-	.nav-button.active { /* 加上这个 .active 选择器 */
+	.nav-button.active { 
 		transform: translate(-3px, -3px);
 		box-shadow: 3px 3px 0px 0px var(--main-color);
 	}
@@ -78,7 +81,8 @@ import HeaderLink from './HeaderLink.astro'; // 1. 引入 HeaderLink 组件
 	.nav-button:active {
 		transform: translate(0, 0);
 		box-shadow: 0 0 0 0 transparent;
-		background-color: #ebebeb;
+        /* [修改] active 状态也可以稍微加深一点背景，或者保持透明 */
+		opacity: 0.8;
 	}
 
 	@media (max-width: 768px) {

@@ -19,19 +19,33 @@ html {
   font-display: swap;
 }
 
-/* 3. 定义全局变量 */
+/* 3. 定义全局变量 (支持暗黑模式) */
 :root {
-  --bg-color: #F5F5F5;
-  --dot-color: #E4E4E8; /* 稍微调整了点阵颜色以匹配视觉 */
-  --main-color: #484848;
-  --box-bg: rgba(217, 217, 217, 0.5);
+    /* 默认亮色模式 */
+    --bg-color: #F5F5F5;
+    --dot-color: #E4E4E8;
+    --main-color: #484848;
+    --box-bg: rgba(217, 217, 217, 0.5);
+    
+    /* 灯绳颜色 */
+    --cord-color: #484848;
+}
+
+/* 暗黑模式覆盖 */
+html.dark {
+    --bg-color: #1a1a1a;        /* 深灰背景 */
+    --dot-color: #333333;       /* 深色点阵 */
+    --main-color: #e5e5e5;      /* 浅白文字 */
+    --box-bg: rgba(50, 50, 50, 0.5); /* 深色半透明背景 */
+    
+    --cord-color: #e5e5e5;      /* 灯绳变白 */
 }
 
 /* 4. 全局 Body 样式 */
-/* ... 前面的 @font-face 和 :root 保持不变 ... */
-
 body {
+    /* ... 保持原有字体设置 ... */
     font-family: 'MyLocalZhongSong', 'STZhongsong', '华文中宋', 'SimSun', 'Noto Serif SC', serif;
+    
     background-color: var(--bg-color);
     color: var(--main-color);
     background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
@@ -40,10 +54,12 @@ body {
     padding: 0;
     line-height: 1.7;
     
-    /* 【新增】Sticky Footer 核心布局 */
     display: flex;
     flex-direction: column;
-    min-height: 100vh; /* 确保身体至少占满整个屏幕高度 */
+    min-height: 100vh;
+    
+    /* [新增] 颜色切换时的过渡效果，让变黑不那么生硬 */
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 main {
@@ -99,27 +115,31 @@ main {
 /* 翻页按钮 */
 .btn-page {
     font-family: 'Noto Serif SC', 'SimSun', serif;
-    font-weight: 500; /* 加粗，原为 400 */
+    font-weight: 500;
     transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-    background-color: #fff;
+    
+    /* [修改] 改为变量，支持暗黑模式自动变色 */
+    background-color: var(--bg-color); 
     color: var(--main-color);
+    
     cursor: pointer;
-    border: 4px solid var(--main-color); /* 加粗边框，原为 2px */
-    font-size: 0.75rem; /* 字体变小，原为 0.875rem */
-    padding: 0.25rem 2rem; /* 增加内边距 */
-    letter-spacing: 0.1em; /* 增加字间距 */
+    border: 4px solid var(--main-color);
+    font-size: 0.75rem;
+    padding: 0.25rem 2rem;
+    letter-spacing: 0.1em;
     display: inline-block;
+    text-decoration: none; /* 确保作为链接时没有下划线 */
 }
 
 .btn-page:hover {
-    transform: translate(-3px, -3px); /* 悬浮位移加大，原为 -2px */
-    box-shadow: 3px 3px 0px 0px var(--main-color); /* 阴影加大，原为 2px */
+    transform: translate(-3px, -3px);
+    box-shadow: 3px 3px 0px 0px var(--main-color);
 }
 
 .btn-page:active {
     transform: translate(0, 0);
     box-shadow: 0 0 0 0 transparent;
-    background-color: #ebebeb;
+    opacity: 0.8; /* 点击时稍微变暗一点 */
 }
 
 /* 辅助类 */

@@ -1,0 +1,170 @@
+---
+// src/components/ThemeSwitch.astro
+---
+
+<div id="theme-switch" class="switch-container">
+    <div class="cord" style="view-transition-name: theme-cord"></div>
+    <div class="handle" style="view-transition-name: theme-handle"></div>
+</div>
+
+<script>
+    function initThemeSwitch() {
+        const themeSwitch = document.getElementById('theme-switch');
+        const html = document.documentElement;
+
+        // 1. 初始化
+        const savedTheme = localStorage.getItem('theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+            html.classList.add('dark');
+        }
+
+        const newSwitch = document.getElementById('theme-switch');
+        if (newSwitch) {
+            newSwitch.replaceWith(newSwitch.cloneNode(true));
+            const freshSwitch = document.getElementById('theme-switch');
+            
+            freshSwitch.onclick = async () => {
+                if (freshSwitch.classList.contains('pulling')) return;
+
+                // 1. 拉下 (300ms)
+                freshSwitch.classList.add('pulling');
+                await new Promise(r => setTimeout(r, 300));
+
+                // 2. 准备切换
+                if (!document.startViewTransition) {
+                    toggleTheme();
+                    freshSwitch.classList.remove('pulling');
+                    return;
+                }
+
+                const handle = freshSwitch.querySelector('.handle');
+                const rect = handle.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + rect.height / 2;
+                const endRadius = Math.hypot(
+                    Math.max(x, innerWidth - x),
+                    Math.max(y, innerHeight - y)
+                );
+                
+                const isBecomingDark = !html.classList.contains('dark');
+
+                // 3. 开始 View Transition
+                const transition = document.startViewTransition(() => {
+                    toggleTheme();
+                    freshSwitch.classList.remove('pulling');
+                });
+
+                // 4. 背景扩散动画
+                transition.ready.then(() => {
+                    const clipPath = [
+                        `circle(0px at ${x}px ${y}px)`,
+                        `circle(${endRadius}px at ${x}px ${y}px)`
+                    ];
+                    
+                    document.documentElement.animate(
+                        {
+                            clipPath: isBecomingDark ? clipPath : [...clipPath].reverse(),
+                        },
+                        {
+                            duration: 500,
+                            easing: 'ease-in',
+                            fill: 'forwards',
+                            pseudoElement: isBecomingDark 
+                                ? '::view-transition-new(root)' 
+                                : '::view-transition-old(root)',
+                        }
+                    );
+                });
+            };
+        }
+
+        function toggleTheme() {
+            const isDark = html.classList.contains('dark');
+            if (isDark) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+    }
+
+    document.addEventListener('astro:page-load', initThemeSwitch);
+    document.addEventListener('astro:after-swap', initThemeSwitch);
+</script>
+
+<style>
+    .switch-container {
+        position: fixed;
+        top: 0;
+        right: 10%; 
+        width: 40px;
+        z-index: 10000;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-bottom: 20px;
+    }
+
+    .cord {
+        width: 2px;
+        height: 60px;
+        background-color: var(--cord-color);
+        /* 添加高度过渡，带弹簧效果 (回弹时用) */
+        transition: background-color 0.3s, height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .handle {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: var(--bg-color); 
+        border: 2px solid var(--cord-color);
+        margin-top: -1px; /* 消除缝隙 */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: border-color 0.3s, background-color 0.3s;
+    }
+
+    /* 悬停时：绳子稍微拉长，把手自动下移，不会断开 */
+    .switch-container:hover .cord {
+        height: 70px;
+    }
+
+    /* 点击拉下动画 */
+    .switch-container.pulling .cord {
+        /* [修改] 高度从 120px 减小到 90px，拉动距离缩短，更自然 */
+        height: 90px !important; 
+        transition: height 0.3s ease-out; /* 拉下来要快 */
+    }
+
+    @media (max-width: 768px) {
+        .switch-container {
+            right: 1.5rem;
+        }
+    }
+
+    /* === View Transition 配置 === */
+
+    :global(::view-transition-old(root)),
+    :global(::view-transition-new(root)) {
+        animation: none;
+        mix-blend-mode: normal;
+    }
+
+    :global(.dark::view-transition-new(root)) { z-index: 999; }
+    :global(.dark::view-transition-old(root)) { z-index: 1; }
+    :global(:root:not(.dark)::view-transition-old(root)) { z-index: 999; }
+    :global(:root:not(.dark)::view-transition-new(root)) { z-index: 1; }
+
+    :global(::view-transition-group(theme-cord)),
+    :global(::view-transition-group(theme-handle)) {
+        z-index: 2147483647; 
+        mix-blend-mode: normal;
+        /* 让浏览器自动生成的回弹动画带有弹性 */
+        animation-duration: 500ms;
+        animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+</style>

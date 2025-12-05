@@ -11,6 +11,9 @@ import '../styles/global.css';
 type Props = CollectionEntry<'blog'>['data'];
 
 const { title, description, pubDate, updatedDate, heroImage, tags } = Astro.props;
+
+// [修复1] 获取当前文章的 slug (即 post.id)，用于匹配首页的动画名称
+const { slug } = Astro.params;
 ---
 
 <html lang="zh-CN">
@@ -100,12 +103,10 @@ const { title, description, pubDate, updatedDate, heroImage, tags } = Astro.prop
 				line-height: 1.7;
 			}
 
-            /* [修复] 移除正文中第一个元素的上边距，防止顶部空隙过大 */
             .article-content > :global(*:first-child) {
                 margin-top: 0 !important;
             }
 
-            /* [修复] 移除正文中最后一个元素的下边距，解决底部边距过大的问题 */
             .article-content > :global(*:last-child) {
                 margin-bottom: 0 !important;
             }
@@ -173,7 +174,8 @@ const { title, description, pubDate, updatedDate, heroImage, tags } = Astro.prop
 		<main>
 			<article>
 				<header class="article-header">
-					<div class="title-wrapper">
+					{/* [修复2] 添加 transition:name，让它能和首页的标题“接”上 */}
+					<div class="title-wrapper" transition:name={`title-${slug}`}>
 						<div class="title-bg"></div>
 						<h1 class="article-title">{title}</h1>
 					</div>

@@ -114,21 +114,23 @@ const years = Object.keys(postsByYear).sort((a, b) => b - a);
 				width: 100%;
 			}
 
-			.post-title {
-				font-family: 'MyLocalZhongSong', 'STZhongsong', '华文中宋', 'SimSun', serif;
-				font-size: 1.5rem; 
-				font-weight: bold;
-				color: var(--main-color);
-				padding-left: 1rem;
-				transition: color 0.3s ease;
-				margin: 0;
+            .post-title {
+                font-family: 'MyLocalZhongSong', 'STZhongsong', '华文中宋', 'SimSun', serif;
+                font-size: 1.5rem; 
+                font-weight: bold;
+                color: var(--main-color);
+                padding-left: 1rem;
+                transition: color 0.3s ease;
+                margin: 0;
                 position: relative;
                 z-index: 10;
-			}
+            }
 
-			.post-item:hover .post-title {
-				color: white;
-			}
+            /* [修改] 这里改用 var(--bg-color) */
+            /* 这样在暗黑模式下，背景是黑的，文字就会变黑，从而在白色的竖条上显示出来 */
+            .post-item:hover .post-title {
+                color: var(--bg-color); 
+            }
 
             .post-year {
                 position: absolute;
