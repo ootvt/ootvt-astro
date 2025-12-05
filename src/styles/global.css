@@ -102,8 +102,8 @@ main {
 
 .btn-nav:hover, .nav-button:hover,
 .btn-nav.active, .nav-button.active {  /* 【新增】加上这两个 .active 选择器 */
-    transform: translate(-3px, -3px);
-    box-shadow: 3px 3px 0px 0px var(--main-color);
+    transform: translate(-4px, -4px);
+    box-shadow: 4px 4px 0px 0px var(--main-color);
 }
 
 .btn-nav:active {
@@ -132,8 +132,8 @@ main {
 }
 
 .btn-page:hover {
-    transform: translate(-3px, -3px);
-    box-shadow: 3px 3px 0px 0px var(--main-color);
+    transform: translate(-4px, -4px);
+    box-shadow: 4px 4px 0px 0px var(--main-color);
 }
 
 .btn-page:active {
