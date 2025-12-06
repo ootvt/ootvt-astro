@@ -17,53 +17,17 @@ posts.forEach(post => {
 
 // 转换为数组
 const tags = Array.from(tagCounts.entries());
-
-// 计算最大和最小文章数
+// 计算最大和最小文章数（用于客户端计算字体大小）
 const counts = tags.map(([_, count]) => count);
 const maxCount = Math.max(...counts);
 const minCount = Math.min(...counts);
-
-// 辅助函数：生成随机样式数据
-function getTagVisuals(count: number) {
-	// 1. 字体大小
-	const range = maxCount - minCount;
-	const percent = range === 0 ? 0.5 : (count - minCount) / range;
-	const fontSize = 1 + percent * 2; 
-
-	// 2. [修改] 角度随机扩大到 (-45 ~ 45 度)
-    // 之前是 60 (-30~30)，现在改为 91 (-45~45)
-	const rot = Math.floor(Math.random() * 60) - 30;
-
-    // 3. 位移随机 (X, Y)
-    // 角度变大后，位移也可以稍微配合一下，保持混乱感
-    const tx = Math.floor(Math.random() * 40) - 20;
-    const ty = Math.floor(Math.random() * 40) - 20;
-
-	// 4. 外边距随机
-	const margin = `${Math.random() * 1 - 0.5}rem ${Math.random() * 2 - 1}rem`;
-
-    // 5. 初始层级 (0-10)
-    const zIndex = Math.floor(Math.random() * 10);
-
-	return {
-		fontSize: `${fontSize.toFixed(2)}rem`,
-        rot,
-        tx,
-        ty,
-		margin,
-        zIndex
-	};
-}
-
-// 随机打乱
-const shuffledTags = tags.sort(() => Math.random() - 0.5);
 ---
 
 <!doctype html>
 <html lang="zh-CN">
 	<head>
 		<BaseHead title={`分类 - ${SITE_TITLE}`} description="博客文章分类" />
-	<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Noto+Serif+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Noto+Serif+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
 		<style>
 			/* 标签云容器 */
 			.tag-cloud-container {
@@ -73,27 +37,22 @@ const shuffledTags = tags.sort(() => Math.random() - 0.5);
 				align-items: center;
 				list-style: none;
 				margin: 0;
-                
-                /* 保持较大的顶部内边距，防止45度旋转时棱角戳到导航栏 */
 				padding: 10rem 2rem 5rem; 
-                
-                overflow: visible;
-                position: relative;
-                
-                max-width: 800px;
-                margin-left: auto;
-                margin-right: auto;
+				overflow: visible;
+				position: relative;
+				max-width: 800px;
+				margin-left: auto;
+				margin-right: auto;
 			}
 
 			.category-item {
-                position: relative;
-                transition: z-index 0s; 
+				position: relative;
+				transition: z-index 0s; 
 			}
 
-            /* 悬停时提升 父元素 li 的层级，防止被遮挡 */
-            .category-item:hover {
-                z-index: 9999 !important;
-            }
+			.category-item:hover {
+				z-index: 9999 !important;
+			}
 
 			.category-link {
 				display: inline-flex;
@@ -103,40 +62,42 @@ const shuffledTags = tags.sort(() => Math.random() - 0.5);
 				background-color: var(--box-bg);
 				text-decoration: none;
 				color: var(--main-color);
-                border: 1px solid transparent;
-                cursor: pointer;
-                
-                /* CSS 变量控制初始状态 */
-                transform: translate(calc(var(--tx) * 1px), calc(var(--ty) * 1px)) rotate(calc(var(--rot) * 1deg));
-                
+				border: 1px solid transparent;
+				cursor: pointer;
+				
+				/* === 初始化 CSS 变量 === */
+				--tx: 0px;
+				--ty: 0px;
+				--rot: 0deg;
+				--hover-rot: 0deg; /* 悬停时的额外旋转角度 */
+
+				/* === 核心：使用变量组合 transform === */
+				transform: translate(var(--tx), var(--ty)) rotate(var(--rot));
+				
 				transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-                
-                will-change: transform;
-                backface-visibility: hidden;
+				will-change: transform;
+				backface-visibility: hidden;
 			}
 
 			.category-link:hover {
 				border-color: var(--main-color);
-				background-color: var(--bg-color); 
-				
-                /* 悬停归位：角度复原为 0度 或 5度，方便阅读 */
-                /* 这里保持原来的设计：微转 5 度，放大 */
-				transform: translate(0, 0) rotate(5deg) scale(1.2);
-				
+				background-color: var(--bg-color);
+				/* 悬停时：保持原位移，原角度 + 悬停角度，并放大 */
+				transform: translate(var(--tx), var(--ty)) rotate(calc(var(--rot) + var(--hover-rot))) scale(1.2);
 				box-shadow: 4px 4px 0px 0px var(--main-color);
 			}
 
 			.category-name {
 				font-weight: 500;
-                line-height: 1;
+				line-height: 1;
 			}
 
 			.category-count {
 				font-size: 0.75em;
 				font-weight: bold;
 				opacity: 0.6;
-                margin-left: 2px;
-                vertical-align: top;
+				margin-left: 2px;
+				vertical-align: top;
 			}
 
 			.total-info {
@@ -148,47 +109,101 @@ const shuffledTags = tags.sort(() => Math.random() - 0.5);
 			}
 
 			@media (max-width: 768px) {
-                .tag-cloud-container {
-                    padding: 6rem 1rem;
-                }
+				.tag-cloud-container {
+					padding: 6rem 1rem;
+				}
 			}
 		</style>
 	</head>
 	<body>
 		<Header />
 		<main>
-			<ul class="tag-cloud-container">
-				{shuffledTags.map(([tag, count]) => {
-                    const visuals = getTagVisuals(count);
-                    return (
+			<ul class="tag-cloud-container" id="tag-cloud">
+				{tags.map(([tag, count]) => (
 					<li 
-                        class="category-item" 
-                        style={`
-                            margin: ${visuals.margin}; 
-                            z-index: ${visuals.zIndex};
-                        `}
-                    >
+						class="category-item" 
+						data-count={count}
+						data-max={maxCount}
+						data-min={minCount}
+					>
 						<a 
-                            href={`/tags/${tag}/`} 
-                            class="category-link"
-                            style={`
-                                font-size: ${visuals.fontSize}; 
-                                --tx: ${visuals.tx};
-                                --ty: ${visuals.ty};
-                                --rot: ${visuals.rot};
-                            `}
-                        >
+							href={`/tags/${tag}/`} 
+							class="category-link"
+						>
 							<span class="category-name"># {tag}</span>
 							<span class="category-count">{count}</span>
 						</a>
 					</li>
-				)})}
+				))}
 			</ul>
 
 			<div class="total-info">
-				共 {shuffledTags.length} 个分类，{posts.length} 篇文章
+				共 {tags.length} 个分类，{posts.length} 篇文章
 			</div>
 		</main>
 		<Footer />
+
+		<script>
+			function initTagCloud() {
+				const container = document.getElementById('tag-cloud');
+				if (!container) return;
+
+				const items = Array.from(container.querySelectorAll('.category-item'));
+				
+				// 1. 随机打乱顺序
+				items.sort(() => Math.random() - 0.5);
+				items.forEach(item => container.appendChild(item));
+
+				// 2. 为每个标签应用随机样式
+				items.forEach((item) => {
+					const count = parseInt(item.getAttribute('data-count') || '0');
+					const maxCount = parseInt(item.getAttribute('data-max') || '1');
+					const minCount = parseInt(item.getAttribute('data-min') || '0');
+					const link = item.querySelector('.category-link');
+					
+					if (!link) return;
+
+					// 计算字体大小
+					const range = maxCount - minCount;
+					const percent = range === 0 ? 0.5 : (count - minCount) / range;
+					const fontSize = 1 + percent * 2;
+
+					// 生成随机角度 (-45 ~ 45 度)
+					const rot = Math.floor(Math.random() * 90) - 45;
+
+					// 生成随机位移 (X, Y)
+					const tx = Math.floor(Math.random() * 40) - 20;
+					const ty = Math.floor(Math.random() * 40) - 20;
+
+					// 生成随机外边距
+					const marginX = (Math.random() * 2 - 1).toFixed(2);
+					const marginY = (Math.random() * 1 - 0.5).toFixed(2);
+
+					// 生成随机层级 (0-10)
+					const zIndex = Math.floor(Math.random() * 10);
+
+					// === 应用样式 ===
+					link.style.fontSize = `${fontSize.toFixed(2)}rem`;
+					
+					// 核心修改：将随机值存入 CSS 变量，而不是直接写死 transform
+					link.style.setProperty('--tx', `${tx}px`);
+					link.style.setProperty('--ty', `${ty}px`);
+					link.style.setProperty('--rot', `${rot}deg`);
+					
+					item.style.margin = `${marginY}rem ${marginX}rem`;
+					item.style.zIndex = zIndex.toString();
+
+					// 3. 添加鼠标事件：每次悬停时重新生成随机旋转增量
+					link.addEventListener('mouseenter', () => {
+						// 这里生成一个 -20 到 20 度的额外旋转
+						const hoverRot = Math.floor(Math.random() * 40) - 20;
+						link.style.setProperty('--hover-rot', hoverRot + 'deg');
+					});
+				});
+			}
+
+			// 页面加载时初始化
+			document.addEventListener('astro:page-load', initTagCloud);
+		</script>
 	</body>
 </html>
