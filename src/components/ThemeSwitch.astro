@@ -110,23 +110,40 @@
     }
 
     .cord {
-        width: 2px;
-        height: 60px;
-        background-color: var(--cord-color);
-        /* 添加高度过渡，带弹簧效果 (回弹时用) */
-        transition: background-color 0.3s, height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
+            width: 2px;
+            height: 60px;
+            background-color: var(--cord-color);
+            
+            /* [修改这里] 默认状态 (亮色模式) */
+            /* 当从暗 -> 亮时，会退回到这个状态，所以这里写 0.8s */
+            transition: background-color 1.5s, height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
 
-    .handle {
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        background-color: var(--bg-color); 
-        border: 2px solid var(--cord-color);
-        margin-top: -1px; /* 消除缝隙 */
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        transition: border-color 0.3s, background-color 0.3s;
-    }
+        /* [新增] 暗色模式下的状态 */
+        /* 当从亮 -> 暗时，会应用这个状态，所以这里写 0.3s */
+        /* 注意：必须保留 height 的过渡，否则拉动动画会失效 */
+        :global(.dark) .cord {
+            transition: background-color 0.3s, height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .handle {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: var(--bg-color); 
+            border: 2px solid var(--cord-color);
+            margin-top: -1px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            
+            /* [修改这里] 默认状态 (亮色模式) -> 0.8s */
+            transition: border-color 1.8s, background-color 1.8s;
+        }
+
+        /* [新增] 暗色模式下的拉环 -> 0.3s */
+        /* 建议同步修改，否则绳子变色了球还没变，会很怪 */
+        :global(.dark) .handle {
+            transition: border-color 0.3s, background-color 0.3s;
+        }
 
     /* 悬停时：绳子稍微拉长，把手自动下移，不会断开 */
     .switch-container:hover .cord {
