@@ -10,9 +10,17 @@ tags: ['技术', '设计']
 ### 本地部署网站
 直接问Gemini本地部署Astro的方法：我想用Astro建一个自己的博客，该怎么搞呢？
 ```bash
-// 测试代码高亮
+// Gemini给我的代码
 npm create astro@latest
 cd my-blog
 npm run dev
 ```
-以前装过npm，这里省略安装步骤，一路yes,搞定,没有出错，成功建立博客网站，过程还是很简单的。
+以前装过npm，这里省略安装步骤。一路next，打开http://localhost:4321 ，成功部署。Gemini建议我安装Tailwind CSS，我也不知道是啥，看名字应该是最新的前端技术，一起安装了，后面应该会用到。
+
+### 博客上线
+```bash
+git add .
+git commit -m "initial commit"
+git remote add origin <你的仓库地址>
+git push -u origin main
+```
